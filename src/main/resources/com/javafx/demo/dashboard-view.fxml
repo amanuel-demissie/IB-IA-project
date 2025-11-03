@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.javafx.demo.DashboardController"
+            prefWidth="600" prefHeight="400">
+  <top>
+    <ToolBar>
+      <Label text="Dashboard (MVP)" />
+      <Pane prefWidth="20" BorderPane.alignment="CENTER" />
+      <Label fx:id="userLabel" />
+    </ToolBar>
+  </top>
+  <center>
+    <Label text="Welcome to the Factory Inventory System" />
+  </center>
+</BorderPane>
+

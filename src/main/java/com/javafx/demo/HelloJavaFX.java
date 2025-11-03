@@ -1,29 +1,28 @@
 package com.javafx.demo;
 
+import com.javafx.demo.db.Database;
+import com.javafx.demo.security.AuthService;
 import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
 public class HelloJavaFX extends Application {
     
     @Override
-    public void start(Stage primaryStage) {
-        Label label = new Label("Hello, JavaFX from Cursor!");
-        Button button = new Button("Click me!");
+    public void start(Stage stage) throws Exception {
+        // Bootstrap database and seed admin account
+        Database.migrateIfNeeded();
+        new AuthService().seedAdminIfMissing();
+
+        FXMLLoader loader = new FXMLLoader(
+            getClass().getResource("/com/javafx/demo/login-view.fxml")
+        );
+        Scene scene = new Scene(loader.load(), 360, 220);
         
-        button.setOnAction(e -> label.setText("Button clicked!"));
-        
-        VBox root = new VBox(10);
-        root.getChildren().addAll(label, button);
-        
-        Scene scene = new Scene(root, 300, 200);
-        
-        primaryStage.setTitle("JavaFX Demo in Cursor");
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        stage.setTitle("Factory Inventory Login");
+        stage.setScene(scene);
+        stage.show();
     }
     
     public static void main(String[] args) {
