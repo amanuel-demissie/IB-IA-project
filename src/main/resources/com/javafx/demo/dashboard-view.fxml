@@ -1,21 +1,110 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.Insets?>
+<?import javafx.geometry.Pos?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
+<?import javafx.scene.shape.Circle?>
 
 <BorderPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
             fx:controller="com.javafx.demo.DashboardController"
-            prefWidth="600" prefHeight="400">
+            prefWidth="1200" prefHeight="800">
+  <!-- Header -->
   <top>
-    <ToolBar>
-      <Label text="Dashboard (MVP)" />
-      <Pane prefWidth="20" BorderPane.alignment="CENTER" />
-      <Label fx:id="userLabel" />
-    </ToolBar>
+    <BorderPane BorderPane.alignment="CENTER">
+      <padding>
+        <Insets top="24" right="24" bottom="24" left="24" />
+      </padding>
+      <center>
+        <Label text="Factory Inventory and Access Logging System" styleClass="app-title" />
+      </center>
+      <right>
+        <HBox spacing="12" alignment="CENTER_RIGHT">
+          <children>
+            <Label fx:id="userLabel" />
+            <StackPane prefWidth="36" prefHeight="36" style="-fx-background-color:#e5e7eb; -fx-background-radius:18;" />
+          </children>
+        </HBox>
+      </right>
+    </BorderPane>
   </top>
+
+  <!-- Sidebar -->
+  <left>
+    <VBox spacing="8" prefWidth="200" styleClass="sidebar">
+      <children>
+        <Button text="Dashboard" maxWidth="Infinity" styleClass="nav-item selected" />
+        <Button text="Product Log" maxWidth="Infinity" styleClass="nav-item" />
+        <Button text="User Management" maxWidth="Infinity" styleClass="nav-item" />
+      </children>
+    </VBox>
+  </left>
+
+  <!-- Main content -->
   <center>
-    <Label text="Welcome to the Factory Inventory System" />
+    <VBox spacing="24">
+      <padding>
+        <Insets top="8" right="24" bottom="24" left="24" />
+      </padding>
+      <children>
+        <!-- Stat cards grid -->
+        <GridPane hgap="20" vgap="20">
+          <columnConstraints>
+            <ColumnConstraints percentWidth="50" />
+            <ColumnConstraints percentWidth="50" />
+          </columnConstraints>
+          <rowConstraints>
+            <RowConstraints />
+            <RowConstraints />
+          </rowConstraints>
+          <children>
+            <VBox GridPane.rowIndex="0" GridPane.columnIndex="0" spacing="8" styleClass="stat-card">
+              <children>
+                <Label text="Total Products" styleClass="stat-title" />
+                <Label text="12,457" styleClass="stat-value" />
+                <Label text="Overall Inventory" styleClass="stat-subtitle" />
+              </children>
+            </VBox>
+            <VBox GridPane.rowIndex="0" GridPane.columnIndex="1" spacing="8" styleClass="stat-card">
+              <children>
+                <Label text="Incoming Products" styleClass="stat-title" />
+                <Label text="1,234" styleClass="stat-value" />
+                <Label text="Today's Incoming" styleClass="stat-subtitle" />
+              </children>
+            </VBox>
+            <VBox GridPane.rowIndex="1" GridPane.columnIndex="0" spacing="8" styleClass="stat-card">
+              <children>
+                <Label text="Outgoing Products" styleClass="stat-title" />
+                <Label text="368" styleClass="stat-value" />
+                <Label text="Today's Outgoing" styleClass="stat-subtitle" />
+              </children>
+            </VBox>
+            <VBox GridPane.rowIndex="1" GridPane.columnIndex="1" spacing="8" styleClass="stat-card">
+              <children>
+                <Label text="Unauthorized Access Attempts" styleClass="stat-title" />
+                <Label text="5" styleClass="stat-value" />
+                <Label text="Today's Attempts" styleClass="stat-subtitle" />
+              </children>
+            </VBox>
+          </children>
+        </GridPane>
+
+        <!-- Recent Logs Table -->
+        <VBox spacing="12">
+          <children>
+            <Label text="Recent Logs" styleClass="section-title" />
+            <TableView prefHeight="360">
+              <columns>
+                <TableColumn text="Date" prefWidth="240" />
+                <TableColumn text="Action" prefWidth="520" />
+                <TableColumn text="User" prefWidth="240" />
+              </columns>
+            </TableView>
+          </children>
+        </VBox>
+      </children>
+    </VBox>
   </center>
 </BorderPane>
 

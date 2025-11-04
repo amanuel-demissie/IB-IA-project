@@ -1,22 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import javafx.geometry.Insets?>
+<?import javafx.geometry.Pos?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<VBox xmlns="http://javafx.com/javafx"
-      xmlns:fx="http://javafx.com/fxml"
-      fx:controller="com.javafx.demo.LoginController"
-      spacing="10" prefWidth="360" prefHeight="220">
-  <padding>
-    <Insets topRightBottomLeft="16" />
-  </padding>
-  <children>
-    <Label text="Factory Inventory – Login" />
-    <TextField fx:id="usernameField" promptText="Username" />
-    <PasswordField fx:id="passwordField" promptText="Password" />
-    <Button text="Login" onAction="#onLogin" />
-    <Label fx:id="errorLabel" textFill="red" />
-  </children>
-</VBox>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.javafx.demo.LoginController"
+            prefWidth="960" prefHeight="640">
+  <top>
+    <StackPane BorderPane.alignment="CENTER">
+      <padding>
+        <Insets top="40" bottom="24" />
+      </padding>
+      <children>
+        <Label text="Factory Inventory and Access Logging System"
+               styleClass="app-title" />
+      </children>
+    </StackPane>
+  </top>
+  <center>
+    <VBox alignment="CENTER" spacing="16">
+      <children>
+        <VBox spacing="12" prefWidth="420" styleClass="card">
+          <padding>
+            <Insets topRightBottomLeft="24" />
+          </padding>
+          <children>
+            <TextField fx:id="usernameField" promptText="Username" styleClass="input" />
+            <PasswordField fx:id="passwordField" promptText="Password" styleClass="input" />
+            <Button text="Login" onAction="#onLogin" maxWidth="Infinity" styleClass="primary-button" />
+            <Label fx:id="errorLabel" textFill="red" />
+          </children>
+        </VBox>
+        <Hyperlink text="Forgot password?" focusTraversable="false" />
+      </children>
+    </VBox>
+  </center>
+</BorderPane>
 

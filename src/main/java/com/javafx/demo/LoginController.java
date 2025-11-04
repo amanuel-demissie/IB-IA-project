@@ -38,7 +38,10 @@ public class LoginController {
 
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/javafx/demo/dashboard-view.fxml"));
-            Scene scene = new Scene(loader.load(), 600, 400);
+            Scene scene = new Scene(loader.load(), 1200, 800);
+            scene.getStylesheets().add(
+                getClass().getResource("/com/javafx/demo/styles.css").toExternalForm()
+            );
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
             stage.setScene(scene);
             stage.setTitle("Factory Dashboard");

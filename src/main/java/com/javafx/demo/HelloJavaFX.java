@@ -18,7 +18,10 @@ public class HelloJavaFX extends Application {
         FXMLLoader loader = new FXMLLoader(
             getClass().getResource("/com/javafx/demo/login-view.fxml")
         );
-        Scene scene = new Scene(loader.load(), 360, 220);
+        Scene scene = new Scene(loader.load(), 960, 640);
+        scene.getStylesheets().add(
+            getClass().getResource("/com/javafx/demo/styles.css").toExternalForm()
+        );
         
         stage.setTitle("Factory Inventory Login");
         stage.setScene(scene);
