@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.javafx.demo.ProductLogController"
+            prefWidth="1200" prefHeight="800">
+  <!-- Header -->
+  <top>
+    <BorderPane BorderPane.alignment="CENTER">
+      <padding>
+        <Insets top="24" right="24" bottom="24" left="24" />
+      </padding>
+      <center>
+        <Label text="Product Log - Check In/Out" styleClass="app-title" />
+      </center>
+      <right>
+        <HBox spacing="12" alignment="CENTER_RIGHT">
+          <children>
+            <Label fx:id="userLabel" />
+          </children>
+        </HBox>
+      </right>
+    </BorderPane>
+  </top>
+
+  <!-- Sidebar -->
+  <left>
+    <VBox spacing="8" prefWidth="200" styleClass="sidebar">
+      <children>
+        <Button fx:id="dashboardButton" text="Dashboard" maxWidth="Infinity" styleClass="nav-item" onAction="#onDashboardClick" />
+        <Button fx:id="productLogButton" text="Product Log" maxWidth="Infinity" styleClass="nav-item selected" onAction="#onProductLogClick" />
+        <Button fx:id="alertsButton" text="Alerts" maxWidth="Infinity" styleClass="nav-item" onAction="#onAlertsClick" />
+        <Button fx:id="userManagementButton" text="User Management" maxWidth="Infinity" styleClass="nav-item" onAction="#onUserManagementClick" />
+      </children>
+    </VBox>
+  </left>
+
+  <!-- Main content -->
+  <center>
+    <VBox spacing="24" alignment="TOP_CENTER">
+      <padding>
+        <Insets top="32" right="32" bottom="32" left="32" />
+      </padding>
+      <children>
+        <!-- Check In/Out Form -->
+        <VBox spacing="16" styleClass="card" maxWidth="600">
+          <padding>
+            <Insets top="24" right="24" bottom="24" left="24" />
+          </padding>
+          <children>
+            <Label text="Check Product In/Out" styleClass="section-title" />
+            
+            <VBox spacing="8">
+              <Label text="Product:" />
+              <ComboBox fx:id="productComboBox" prefWidth="400" />
+            </VBox>
+
+            <VBox spacing="8">
+              <Label text="Action:" />
+              <ToggleGroup fx:id="actionGroup" />
+              <HBox spacing="16">
+                <RadioButton text="Check Out" toggleGroup="$actionGroup" selected="true" fx:id="checkOutRadio" />
+                <RadioButton text="Check In" toggleGroup="$actionGroup" fx:id="checkInRadio" />
+              </HBox>
+            </VBox>
+
+            <VBox spacing="8">
+              <Label text="Quantity:" />
+              <TextField fx:id="quantityField" prefWidth="200" promptText="Enter quantity" />
+            </VBox>
+
+            <VBox spacing="8">
+              <Label text="Notes (Optional):" />
+              <TextArea fx:id="notesArea" prefWidth="400" prefRowCount="3" promptText="Add any notes..." />
+            </VBox>
+
+            <HBox spacing="12">
+              <Button text="Submit" styleClass="primary-button" onAction="#onSubmitClick" />
+              <Button text="Clear" onAction="#onClearClick" />
+            </HBox>
+
+            <Label fx:id="messageLabel" textFill="#dc2626" />
+          </children>
+        </VBox>
+
+        <!-- Recent Logs -->
+        <VBox spacing="12" prefWidth="900">
+          <children>
+            <Label text="Recent Activity" styleClass="section-title" />
+            <TableView fx:id="logsTable" prefHeight="300">
+              <columns>
+                <TableColumn fx:id="dateColumn" text="Date" prefWidth="180" />
+                <TableColumn fx:id="productColumn" text="Product" prefWidth="200" />
+                <TableColumn fx:id="actionColumn" text="Action" prefWidth="120" />
+                <TableColumn fx:id="quantityColumn" text="Quantity" prefWidth="100" />
+                <TableColumn fx:id="userColumn" text="User" prefWidth="150" />
+                <TableColumn fx:id="notesColumn" text="Notes" prefWidth="200" />
+              </columns>
+            </TableView>
+          </children>
+        </VBox>
+      </children>
+    </VBox>
+  </center>
+</BorderPane>
+

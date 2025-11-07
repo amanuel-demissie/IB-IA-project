@@ -15,6 +15,8 @@ public class AuthService {
     }
 
     public void seedAdminIfMissing() {
+        // Seed all roles (ADMIN, SECURITY, STAFF)
+        userDao.seedRoles();
         // For development: default admin/admin123. In production, prompt or secure differently.
         String defaultAdminUsername = "admin";
         String defaultAdminPasswordHash = PasswordHasher.hash("admin123");

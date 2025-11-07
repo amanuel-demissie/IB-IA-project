@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.javafx.demo.AlertsController"
+            prefWidth="1200" prefHeight="800">
+  <!-- Header -->
+  <top>
+    <BorderPane BorderPane.alignment="CENTER">
+      <padding>
+        <Insets top="24" right="24" bottom="24" left="24" />
+      </padding>
+      <center>
+        <Label text="Alerts - Anomaly Detection" styleClass="app-title" />
+      </center>
+      <right>
+        <HBox spacing="12" alignment="CENTER_RIGHT">
+          <children>
+            <Label fx:id="userLabel" />
+            <Button text="Check for Overdue Items" onAction="#onCheckOverdueClick" />
+          </children>
+        </HBox>
+      </right>
+    </BorderPane>
+  </top>
+
+  <!-- Sidebar -->
+  <left>
+    <VBox spacing="8" prefWidth="200" styleClass="sidebar">
+      <children>
+        <Button fx:id="dashboardButton" text="Dashboard" maxWidth="Infinity" styleClass="nav-item" onAction="#onDashboardClick" />
+        <Button fx:id="productLogButton" text="Product Log" maxWidth="Infinity" styleClass="nav-item" onAction="#onProductLogClick" />
+        <Button fx:id="alertsButton" text="Alerts" maxWidth="Infinity" styleClass="nav-item selected" onAction="#onAlertsClick" />
+        <Button fx:id="userManagementButton" text="User Management" maxWidth="Infinity" styleClass="nav-item" onAction="#onUserManagementClick" />
+      </children>
+    </VBox>
+  </left>
+
+  <!-- Main content -->
+  <center>
+    <VBox spacing="24" alignment="TOP_CENTER">
+      <padding>
+        <Insets top="32" right="32" bottom="32" left="32" />
+      </padding>
+      <children>
+        <!-- Filter Tabs -->
+        <HBox spacing="12">
+          <ToggleGroup fx:id="filterGroup" />
+          <RadioButton text="Unresolved" toggleGroup="$filterGroup" selected="true" fx:id="unresolvedRadio" onAction="#onFilterChange" />
+          <RadioButton text="All Alerts" toggleGroup="$filterGroup" fx:id="allAlertsRadio" onAction="#onFilterChange" />
+        </HBox>
+
+        <!-- Alerts Table -->
+        <VBox spacing="12" prefWidth="1000">
+          <children>
+            <Label fx:id="alertsCountLabel" text="0 Unresolved Alerts" styleClass="section-title" />
+            <TableView fx:id="alertsTable" prefHeight="500">
+              <columns>
+                <TableColumn fx:id="dateColumn" text="Date" prefWidth="180" />
+                <TableColumn fx:id="productColumn" text="Product" prefWidth="200" />
+                <TableColumn fx:id="typeColumn" text="Alert Type" prefWidth="150" />
+                <TableColumn fx:id="messageColumn" text="Message" prefWidth="350" />
+                <TableColumn fx:id="statusColumn" text="Status" prefWidth="120" />
+              </columns>
+            </TableView>
+            <HBox spacing="12">
+              <Button text="Resolve Selected" styleClass="primary-button" onAction="#onResolveClick" />
+              <Label fx:id="messageLabel" textFill="#dc2626" />
+            </HBox>
+          </children>
+        </VBox>
+      </children>
+    </VBox>
+  </center>
+</BorderPane>
+

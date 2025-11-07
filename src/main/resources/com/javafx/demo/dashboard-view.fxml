@@ -34,9 +34,10 @@
   <left>
     <VBox spacing="8" prefWidth="200" styleClass="sidebar">
       <children>
-        <Button text="Dashboard" maxWidth="Infinity" styleClass="nav-item selected" />
-        <Button text="Product Log" maxWidth="Infinity" styleClass="nav-item" />
-        <Button text="User Management" maxWidth="Infinity" styleClass="nav-item" />
+        <Button fx:id="dashboardButton" text="Dashboard" maxWidth="Infinity" styleClass="nav-item selected" onAction="#onDashboardClick" />
+        <Button fx:id="productLogButton" text="Product Log" maxWidth="Infinity" styleClass="nav-item" onAction="#onProductLogClick" />
+        <Button fx:id="alertsButton" text="Alerts" maxWidth="Infinity" styleClass="nav-item" onAction="#onAlertsClick" />
+        <Button fx:id="userManagementButton" text="User Management" maxWidth="Infinity" styleClass="nav-item" onAction="#onUserManagementClick" />
       </children>
     </VBox>
   </left>
@@ -62,29 +63,29 @@
             <VBox GridPane.rowIndex="0" GridPane.columnIndex="0" spacing="8" styleClass="stat-card">
               <children>
                 <Label text="Total Products" styleClass="stat-title" />
-                <Label text="12,457" styleClass="stat-value" />
+                <Label fx:id="totalProductsLabel" text="0" styleClass="stat-value" />
                 <Label text="Overall Inventory" styleClass="stat-subtitle" />
               </children>
             </VBox>
             <VBox GridPane.rowIndex="0" GridPane.columnIndex="1" spacing="8" styleClass="stat-card">
               <children>
                 <Label text="Incoming Products" styleClass="stat-title" />
-                <Label text="1,234" styleClass="stat-value" />
+                <Label fx:id="incomingProductsLabel" text="0" styleClass="stat-value" />
                 <Label text="Today's Incoming" styleClass="stat-subtitle" />
               </children>
             </VBox>
             <VBox GridPane.rowIndex="1" GridPane.columnIndex="0" spacing="8" styleClass="stat-card">
               <children>
                 <Label text="Outgoing Products" styleClass="stat-title" />
-                <Label text="368" styleClass="stat-value" />
+                <Label fx:id="outgoingProductsLabel" text="0" styleClass="stat-value" />
                 <Label text="Today's Outgoing" styleClass="stat-subtitle" />
               </children>
             </VBox>
             <VBox GridPane.rowIndex="1" GridPane.columnIndex="1" spacing="8" styleClass="stat-card">
               <children>
-                <Label text="Unauthorized Access Attempts" styleClass="stat-title" />
-                <Label text="5" styleClass="stat-value" />
-                <Label text="Today's Attempts" styleClass="stat-subtitle" />
+                <Label text="Unresolved Alerts" styleClass="stat-title" />
+                <Label fx:id="alertsLabel" text="0" styleClass="stat-value" />
+                <Label text="Requires Attention" styleClass="stat-subtitle" />
               </children>
             </VBox>
           </children>
@@ -94,11 +95,13 @@
         <VBox spacing="12">
           <children>
             <Label text="Recent Logs" styleClass="section-title" />
-            <TableView prefHeight="360">
+            <TableView fx:id="logsTable" prefHeight="360">
               <columns>
-                <TableColumn text="Date" prefWidth="240" />
-                <TableColumn text="Action" prefWidth="520" />
-                <TableColumn text="User" prefWidth="240" />
+                <TableColumn fx:id="dateColumn" text="Date" prefWidth="240" />
+                <TableColumn fx:id="actionColumn" text="Action" prefWidth="320" />
+                <TableColumn fx:id="productColumn" text="Product" prefWidth="200" />
+                <TableColumn fx:id="quantityColumn" text="Quantity" prefWidth="100" />
+                <TableColumn fx:id="userColumn" text="User" prefWidth="140" />
               </columns>
             </TableView>
           </children>
