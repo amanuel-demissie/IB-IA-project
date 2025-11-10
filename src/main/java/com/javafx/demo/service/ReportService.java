@@ -120,14 +120,30 @@ public class ReportService {
         StringBuilder html = new StringBuilder();
         html.append("<!doctype html><html><head><meta charset='utf-8'/>");
         html.append("<style>")
-            .append("body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-size:12px;color:#111827;margin:24px;}")
-            .append("h1{font-size:18px;margin:0 0 8px 0;}")
-            .append(".muted{color:#6b7280}")
-            .append("table{width:100%;border-collapse:collapse;margin-top:8px;}")
-            .append("th,td{border:1px solid #e5e7eb;padding:6px 8px;vertical-align:top;}")
+            // Page and typography
+            .append("@page{size:landscape;margin:18mm;}body{font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-size:12px;color:#111827;margin:0;}")
+            .append("h1{font-size:18px;margin:0 0 8px 0;} .muted{color:#6b7280}")
+            // Tables
+            .append("table{width:100%;border-collapse:collapse;margin-top:8px;table-layout:fixed;}")
+            .append("thead{display:table-header-group;} tr,td,th{page-break-inside:avoid;}")
+            .append("th,td{border:1px solid #e5e7eb;padding:6px 8px;vertical-align:top;white-space:normal;word-break:break-word;overflow-wrap:anywhere;}")
             .append("th{background:#f3f4f6;text-align:left;}")
             .append("td.num{text-align:right;font-variant-numeric:tabular-nums;}")
-            .append(".section{margin-top:16px;}")
+            .append(".section{margin:16px 0 0 0;}")
+            // Column widths for summary (6 columns)
+            .append(".table-summary colgroup col:nth-child(1){width:10%;}")
+            .append(".table-summary colgroup col:nth-child(2){width:34%;}")
+            .append(".table-summary colgroup col:nth-child(3){width:10%;}")
+            .append(".table-summary colgroup col:nth-child(4){width:15%;}")
+            .append(".table-summary colgroup col:nth-child(5){width:15%;}")
+            .append(".table-summary colgroup col:nth-child(6){width:16%;}")
+            // Column widths for alerts (6 columns)
+            .append(".table-alerts colgroup col:nth-child(1){width:7%;}")
+            .append(".table-alerts colgroup col:nth-child(2){width:9%;}")
+            .append(".table-alerts colgroup col:nth-child(3){width:18%;}")
+            .append(".table-alerts colgroup col:nth-child(4){width:18%;}")
+            .append(".table-alerts colgroup col:nth-child(5){width:18%;}")
+            .append(".table-alerts colgroup col:nth-child(6){width:30%;}")
             .append("</style></head><body>");
         html.append("<h1>Factory Inventory Daily Report</h1>");
         html.append("<div class='muted'>").append(dateStr).append("</div>");
@@ -145,8 +161,9 @@ public class ReportService {
 
             Map<Integer, Integer> insPerProduct = sumQuantityByProductAndActionOnDate(c, "CHECK_IN", date);
             Map<Integer, Integer> outsPerProduct = sumQuantityByProductAndActionOnDate(c, "CHECK_OUT", date);
-            html.append("<div class='section'><h3>Per Product Summary</h3><table>")
-                .append("<tr><th>Product ID</th><th>Product Name</th><th>Unit</th><th class='num'>Check-Ins</th><th class='num'>Check-Outs</th><th class='num'>Net Change</th></tr>");
+            html.append("<div class='section'><h3>Per Product Summary</h3><table class='table-summary'>")
+                .append("<colgroup><col/><col/><col/><col/><col/><col/></colgroup>")
+                .append("<thead><tr><th>Product ID</th><th>Product Name</th><th>Unit</th><th class='num'>Check-Ins</th><th class='num'>Check-Outs</th><th class='num'>Net Change</th></tr></thead><tbody>");
             for (Integer productId : unionKeys(insPerProduct, outsPerProduct).keySet()) {
                 int ins = insPerProduct.getOrDefault(productId, 0);
                 int outs = outsPerProduct.getOrDefault(productId, 0);
@@ -163,10 +180,11 @@ public class ReportService {
                     .append("<td class='num'>").append(net).append("</td>")
                     .append("</tr>");
             }
-            html.append("</table></div>");
+            html.append("</tbody></table></div>");
 
-            html.append("<div class='section'><h3>Unresolved Alerts</h3><table>")
-                .append("<tr><th>Alert ID</th><th>Product ID</th><th>Product Name</th><th>Alert Type</th><th>Created At</th><th>Message</th></tr>");
+            html.append("<div class='section'><h3>Unresolved Alerts</h3><table class='table-alerts'>")
+                .append("<colgroup><col/><col/><col/><col/><col/><col/></colgroup>")
+                .append("<thead><tr><th>Alert ID</th><th>Product ID</th><th>Product Name</th><th>Alert Type</th><th>Created At</th><th>Message</th></tr></thead><tbody>");
             try (PreparedStatement ps = c.prepareStatement("""
                 SELECT id, product_id, alert_type, created_at, message
                 FROM alerts
@@ -193,7 +211,7 @@ public class ReportService {
                     }
                 }
             }
-            html.append("</table></div>");
+            html.append("</tbody></table></div>");
         } catch (Exception e) {
             throw new RuntimeException("Failed to build HTML report: " + e.getMessage(), e);
         }

@@ -26,6 +26,10 @@ import javafx.scene.web.WebEngine;
 import javafx.scene.web.WebView;
 import javafx.concurrent.Worker;
 import javafx.print.PrinterJob;
+import javafx.print.Printer;
+import javafx.print.PageLayout;
+import javafx.print.PageOrientation;
+import javafx.print.Paper;
 
 // removed explicit DateTimeFormatter usage to avoid runtime resolution issues
 import java.util.concurrent.Executors;
@@ -237,6 +241,13 @@ public class DashboardController {
                         webView.setPrefHeight(height + 20);
                         PrinterJob job = PrinterJob.createPrinterJob();
                         if (job != null) {
+                            try {
+                                Printer printer = job.getPrinter() != null ? job.getPrinter() : Printer.getDefaultPrinter();
+                                if (printer != null) {
+                                    PageLayout layout = printer.createPageLayout(Paper.A4, PageOrientation.LANDSCAPE, 10, 10, 10, 10);
+                                    job.getJobSettings().setPageLayout(layout);
+                                }
+                            } catch (Exception ignored) {}
                             boolean accepted = job.showPrintDialog(printReportButton.getScene().getWindow());
                             if (accepted) {
                                 boolean printed = job.printPage(webView);
