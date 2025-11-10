@@ -89,8 +89,8 @@ public class ProductService {
     /**
      * Create a new product
      */
-    public Product createProduct(String name, String description, int quantity, String location) {
-        return productDao.create(name, description, quantity, location);
+    public Product createProduct(String name, String description, int quantity, String location, String unit) {
+        return productDao.create(name, description, quantity, location, unit);
     }
 
     /**
@@ -119,6 +119,34 @@ public class ProductService {
      */
     public List<ProductLog> getUserLogs(int userId) {
         return logDao.findByUserId(userId);
+    }
+
+    public List<ProductLog> getLogsFiltered(Integer productId, Integer userId, String actionType,
+                                            java.time.LocalDate fromDate, java.time.LocalDate toDate,
+                                            int limit, int offset) {
+        return logDao.findFiltered(productId, userId, actionType, fromDate, toDate, limit, offset);
+    }
+
+    public int countLogsFiltered(Integer productId, Integer userId, String actionType,
+                                 java.time.LocalDate fromDate, java.time.LocalDate toDate) {
+        return logDao.countFiltered(productId, userId, actionType, fromDate, toDate);
+    }
+
+    /**
+     * Seed a few sample products to make the demo usable out of the box.
+     * This only runs if the products table is empty.
+     * @return number of products created
+     */
+    public int seedSampleProductsIfEmpty() {
+        var existing = productDao.findAll();
+        if (!existing.isEmpty()) {
+            return 0;
+        }
+
+        createProduct("Widget A", "Sample widget for testing", 100, "Warehouse A", "pcs");
+        createProduct("Gadget B", "Demo gadget", 60, "Warehouse B", "pcs");
+        createProduct("Component C", "Replacement component", 35, "Storage C", "pcs");
+        return 3;
     }
 }
 

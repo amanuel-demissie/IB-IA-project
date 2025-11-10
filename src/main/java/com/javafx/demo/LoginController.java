@@ -8,6 +8,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -46,8 +47,21 @@ public class LoginController {
             stage.setScene(scene);
             stage.setTitle("Factory Dashboard");
         } catch (Exception e) {
-            errorLabel.setText("Failed to load dashboard");
+            e.printStackTrace();
+            Throwable root = e;
+            while (root.getCause() != null) root = root.getCause();
+            String msg = root.getClass().getSimpleName() + (root.getMessage() != null ? (": " + root.getMessage()) : "");
+            errorLabel.setText("Failed to load dashboard: " + msg);
         }
+    }
+
+    @FXML
+    private void onForgotPassword(ActionEvent event) {
+        Alert info = new Alert(Alert.AlertType.INFORMATION);
+        info.setTitle("Password Reset");
+        info.setHeaderText("Forgot your password?");
+        info.setContentText("Please contact an Admin to reset your password. Admins can reset it from User Management.");
+        info.showAndWait();
     }
 }
 

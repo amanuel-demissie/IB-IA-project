@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.javafx.demo.ProductManagementController"
+            prefWidth="1200" prefHeight="800">
+  <!-- Header -->
+  <top>
+    <BorderPane BorderPane.alignment="CENTER">
+      <padding>
+        <Insets top="24" right="24" bottom="24" left="24" />
+      </padding>
+      <center>
+        <Label text="Products" styleClass="app-title" />
+      </center>
+      <right>
+        <HBox spacing="12" alignment="CENTER_RIGHT">
+          <children>
+            <Label fx:id="userLabel" />
+            <Button text="Logout" onAction="#onLogoutClick" />
+          </children>
+        </HBox>
+      </right>
+    </BorderPane>
+  </top>
+
+  <!-- Sidebar -->
+  <left>
+    <VBox spacing="8" prefWidth="200" styleClass="sidebar">
+      <children>
+        <Button fx:id="dashboardButton" text="Dashboard" maxWidth="Infinity" styleClass="nav-item" onAction="#onDashboardClick" />
+        <Button fx:id="productLogButton" text="Product Log" maxWidth="Infinity" styleClass="nav-item" onAction="#onProductLogClick" />
+        <Button fx:id="alertsButton" text="Alerts" maxWidth="Infinity" styleClass="nav-item" onAction="#onAlertsClick" />
+        <Button fx:id="productsButton" text="Products" maxWidth="Infinity" styleClass="nav-item selected" onAction="#onProductsClick" />
+        <Button fx:id="userManagementButton" text="User Management" maxWidth="Infinity" styleClass="nav-item" onAction="#onUserManagementClick" />
+      </children>
+    </VBox>
+  </left>
+
+  <!-- Main content -->
+  <center>
+    <VBox spacing="24" alignment="TOP_CENTER">
+      <padding>
+        <Insets top="24" right="24" bottom="24" left="24" />
+      </padding>
+      <children>
+        <HBox spacing="24">
+          <!-- Products table -->
+          <VBox spacing="12" prefWidth="700">
+            <children>
+              <Label text="Products" styleClass="section-title" />
+              <TableView fx:id="productsTable" prefHeight="520">
+                <columns>
+                  <TableColumn fx:id="idColumn" text="ID" prefWidth="60" />
+                  <TableColumn fx:id="nameColumn" text="Name" prefWidth="260" />
+                  <TableColumn fx:id="quantityColumn" text="Quantity" prefWidth="120" />
+                  <TableColumn fx:id="unitColumn" text="Unit" prefWidth="100" />
+                  <TableColumn fx:id="locationColumn" text="Location" prefWidth="180" />
+                </columns>
+              </TableView>
+              <HBox spacing="8">
+                <Button text="Update Selected" onAction="#onUpdateProduct" />
+                <Button text="Delete Selected" onAction="#onDeleteProduct" />
+              </HBox>
+            </children>
+          </VBox>
+
+          <!-- Create/Update form -->
+          <VBox spacing="12" styleClass="card" prefWidth="380">
+            <padding>
+              <Insets top="24" right="24" bottom="24" left="24" />
+            </padding>
+            <children>
+              <Label text="Create / Update Product" styleClass="section-title" />
+              <VBox spacing="8">
+                <Label text="Name:" />
+                <TextField fx:id="nameField" promptText="Enter product name" />
+              </VBox>
+              <VBox spacing="8">
+                <Label text="Description:" />
+                <TextArea fx:id="descriptionArea" promptText="Enter description" prefRowCount="3" />
+              </VBox>
+              <VBox spacing="8">
+                <Label text="Quantity:" />
+                <TextField fx:id="quantityField" promptText="Enter quantity" />
+              </VBox>
+              <VBox spacing="8">
+                <Label text="Unit:" />
+                <TextField fx:id="unitField" promptText="e.g. pcs, lbs" />
+              </VBox>
+              <VBox spacing="8">
+                <Label text="Location:" />
+                <TextField fx:id="locationField" promptText="Enter location" />
+              </VBox>
+              <HBox spacing="8">
+                <Button text="Create" styleClass="primary-button" onAction="#onCreateProduct" />
+                <Button text="Clear" onAction="#onClearForm" />
+              </HBox>
+              <Label fx:id="messageLabel" textFill="#dc2626" />
+            </children>
+          </VBox>
+        </HBox>
+      </children>
+    </VBox>
+  </center>
+</BorderPane>
+
+
+

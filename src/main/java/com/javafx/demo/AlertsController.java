@@ -6,6 +6,7 @@ import com.javafx.demo.model.Product;
 import com.javafx.demo.model.User;
 import com.javafx.demo.service.AlertService;
 import com.javafx.demo.service.ProductService;
+import com.javafx.demo.security.AuthGuard;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -13,19 +14,14 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.*;
 import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Label;
-import javafx.scene.control.RadioButton;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDate;
 
 public class AlertsController {
 
@@ -59,17 +55,54 @@ public class AlertsController {
     private Button alertsButton;
     @FXML
     private Button userManagementButton;
+    @FXML
+    private Button productsButton;
+    // Filters
+    @FXML
+    private javafx.scene.control.ComboBox<com.javafx.demo.model.Product> filterProductCombo;
+    @FXML
+    private javafx.scene.control.DatePicker filterFromDate;
+    @FXML
+    private javafx.scene.control.DatePicker filterToDate;
+    @FXML
+    private javafx.scene.control.Pagination pagination;
 
     private final AlertService alertService = new AlertService();
     private final ProductService productService = new ProductService();
-    private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    // Avoid explicit DateTimeFormatter to prevent runtime resolution issues
+    private static final int PAGE_SIZE = 20;
 
     @FXML
     private void initialize() {
-        // Set user info
-        User u = Session.getInstance().getCurrentUser();
+        // Require Admin or Security
+        if (!AuthGuard.isLoggedIn()) {
+            navigateToLoginInternal();
+            return;
+        }
+        if (!AuthGuard.hasAnyRole("ADMIN", "SECURITY")) {
+            showAccessDeniedAndGoDashboard();
+            return;
+        }
+        User u = AuthGuard.currentUser();
         if (u != null) {
             userLabel.setText("Logged in as: " + u.username() + " (" + u.roleName() + ")");
+        }
+
+        // Role-based visibility for navigation
+        if (u != null) {
+            String role = u.roleName();
+            boolean isAdmin = "ADMIN".equals(role);
+            boolean isSecurity = "SECURITY".equals(role);
+            boolean isStaff = "STAFF".equals(role);
+
+            // Product Log visible to Admin and Staff
+            productLogButton.setVisible(isAdmin || isStaff);
+            // Products visible to Admin
+            productsButton.setVisible(isAdmin);
+            // Alerts visible to Admin and Security (we're here already)
+            alertsButton.setVisible(isAdmin || isSecurity);
+            // User Management only for Admin
+            userManagementButton.setVisible(isAdmin);
         }
 
         // Setup table columns
@@ -80,22 +113,45 @@ public class AlertsController {
         statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
 
         // Load alerts
-        loadAlerts();
+        loadFilterProducts();
+        initializeDatePickers();
+        setupPagination();
 
         // Check for overdue items on load
         checkForOverdueItems();
     }
 
-    private void loadAlerts() {
+    private void loadAlerts(int pageIndex) {
         try {
             List<Alert> alerts;
-            if (unresolvedRadio.isSelected()) {
-                alerts = alertService.getUnresolvedAlerts();
-                alertsCountLabel.setText(alerts.size() + " Unresolved Alerts");
+            int offset = pageIndex * PAGE_SIZE;
+            Integer productId = null;
+            var fp = filterProductCombo != null ? filterProductCombo.getSelectionModel().getSelectedItem() : null;
+            if (fp != null) productId = fp.id();
+            String status = unresolvedRadio.isSelected() ? "UNRESOLVED" : "ALL";
+            var from = filterFromDate != null ? filterFromDate.getValue() : null;
+            var to = filterToDate != null ? filterToDate.getValue() : null;
+
+            // Validate date range
+            if (to != null && to.isAfter(LocalDate.now())) {
+                to = LocalDate.now();
+                filterToDate.setValue(to);
+            }
+            if (from != null && to != null && from.isAfter(to)) {
+                messageLabel.setTextFill(javafx.scene.paint.Color.RED);
+                messageLabel.setText("From date must be before To date");
+                alertsTable.getItems().clear();
+                return;
+            }
+
+            alerts = alertService.getAlertsFiltered(productId, status, from, to, PAGE_SIZE, offset);
+            int total = alertService.countAlertsFiltered(productId, status, from, to);
+            int unresolvedCount = alertService.countAlertsFiltered(productId, "UNRESOLVED", from, to);
+            if (pagination != null) pagination.setPageCount(Math.max(1, (int) Math.ceil(total / (double) PAGE_SIZE)));
+            if ("UNRESOLVED".equals(status)) {
+                alertsCountLabel.setText(total + " Unresolved Alerts");
             } else {
-                alerts = alertService.getAllAlerts();
-                long unresolvedCount = alerts.stream().filter(a -> !a.isResolved()).count();
-                alertsCountLabel.setText(unresolvedCount + " Unresolved / " + alerts.size() + " Total Alerts");
+                alertsCountLabel.setText(unresolvedCount + " Unresolved / " + total + " Total Alerts");
             }
 
             ObservableList<AlertTableRow> alertRows = FXCollections.observableArrayList();
@@ -107,7 +163,7 @@ public class AlertsController {
 
                 alertRows.add(new AlertTableRow(
                     alert.id(),
-                    alert.createdAt().format(DATE_FORMATTER),
+                    String.valueOf(alert.createdAt()),
                     productName,
                     alert.alertType(),
                     alert.message(),
@@ -115,7 +171,14 @@ public class AlertsController {
                 ));
             }
 
+            alertsTable.getSelectionModel().clearSelection();
             alertsTable.setItems(alertRows);
+            if (alertRows.isEmpty()) {
+                messageLabel.setTextFill(javafx.scene.paint.Color.GRAY);
+                messageLabel.setText("No results for the selected filters");
+            } else {
+                messageLabel.setText("");
+            }
             messageLabel.setText("");
         } catch (Exception e) {
             e.printStackTrace();
@@ -125,13 +188,15 @@ public class AlertsController {
 
     @FXML
     private void onFilterChange(ActionEvent event) {
-        loadAlerts();
+        if (pagination != null) pagination.setCurrentPageIndex(0);
+        loadAlerts(0);
     }
 
     @FXML
     private void onCheckOverdueClick(ActionEvent event) {
         try {
-            int alertsCreated = alertService.checkForOverdueCheckouts();
+            // For demo purposes, mark any existing check-outs as overdue immediately
+            int alertsCreated = alertService.checkForOverdueCheckouts(0);
             if (alertsCreated > 0) {
                 messageLabel.setTextFill(javafx.scene.paint.Color.GREEN);
                 messageLabel.setText("Created " + alertsCreated + " new alert(s)");
@@ -139,7 +204,7 @@ public class AlertsController {
                 messageLabel.setTextFill(javafx.scene.paint.Color.GRAY);
                 messageLabel.setText("No new overdue items found");
             }
-            loadAlerts();
+            onFilterChange(null);
         } catch (Exception e) {
             e.printStackTrace();
             messageLabel.setTextFill(javafx.scene.paint.Color.RED);
@@ -181,7 +246,7 @@ public class AlertsController {
                 alertService.resolveAlert(selected.getAlertId(), currentUser.id());
                 messageLabel.setTextFill(javafx.scene.paint.Color.GREEN);
                 messageLabel.setText("Alert resolved successfully");
-                loadAlerts();
+                reloadCurrentPage();
             } catch (Exception e) {
                 e.printStackTrace();
                 messageLabel.setTextFill(javafx.scene.paint.Color.RED);
@@ -212,6 +277,21 @@ public class AlertsController {
         alert.setHeaderText("User Management");
         alert.setContentText("User management feature is coming soon!");
         alert.showAndWait();
+    }
+    @FXML
+    private void onProductsClick(ActionEvent event) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/javafx/demo/product-management-view.fxml"));
+            Scene scene = new Scene(loader.load(), 1200, 800);
+            scene.getStylesheets().add(
+                getClass().getResource("/com/javafx/demo/styles.css").toExternalForm()
+            );
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("Products");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void navigateToDashboard(ActionEvent event) {
@@ -244,11 +324,102 @@ public class AlertsController {
         }
     }
 
+    private void setupPagination() {
+        if (pagination != null) {
+            pagination.currentPageIndexProperty().addListener((obs, oldIndex, newIndex) -> {
+                loadAlerts(newIndex.intValue());
+            });
+            pagination.setCurrentPageIndex(0);
+            loadAlerts(0);
+        } else {
+            loadAlerts(0);
+        }
+    }
+
+    private void reloadCurrentPage() {
+        if (pagination != null) {
+            loadAlerts(pagination.getCurrentPageIndex());
+        } else {
+            loadAlerts(0);
+        }
+    }
+
+    private void loadFilterProducts() {
+        try {
+            var products = productService.getAllProducts();
+            ObservableList<Product> productList = FXCollections.observableArrayList(products);
+            filterProductCombo.setItems(productList);
+            filterProductCombo.setCellFactory(listView -> new ListCell<Product>() {
+                @Override
+                protected void updateItem(Product product, boolean empty) {
+                    super.updateItem(product, empty);
+                    setText(empty || product == null ? null : product.name());
+                }
+            });
+            filterProductCombo.setButtonCell(new ListCell<Product>() {
+                @Override
+                protected void updateItem(Product product, boolean empty) {
+                    super.updateItem(product, empty);
+                    setText(empty || product == null ? "All products" : product.name());
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void onApplyFilters(ActionEvent event) {
+        if (pagination != null) pagination.setCurrentPageIndex(0);
+        loadAlerts(0);
+    }
+
+    @FXML
+    private void initializeDatePickers() {
+        final LocalDate today = LocalDate.now();
+        if (filterFromDate != null) {
+            filterFromDate.setDayCellFactory(dp -> new DateCell() {
+                @Override
+                public void updateItem(LocalDate item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setDisable(empty || item.isAfter(today));
+                }
+            });
+        }
+        if (filterToDate != null) {
+            filterToDate.setDayCellFactory(dp -> new DateCell() {
+                @Override
+                public void updateItem(LocalDate item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setDisable(empty || item.isAfter(today));
+                }
+            });
+        }
+    }
+
     private void checkForOverdueItems() {
         try {
-            alertService.checkForOverdueCheckouts();
+            // Seed alerts if any check-outs exist (0 hours threshold for demo usability)
+            alertService.checkForOverdueCheckouts(0);
         } catch (Exception e) {
             // Silent check on load
+            e.printStackTrace();
+        }
+    }
+
+    @FXML
+    private void onLogoutClick(ActionEvent event) {
+        Session.getInstance().setCurrentUser(null);
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/javafx/demo/login-view.fxml"));
+            Scene scene = new Scene(loader.load(), 960, 640);
+            scene.getStylesheets().add(
+                getClass().getResource("/com/javafx/demo/styles.css").toExternalForm()
+            );
+            Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("Factory Inventory Login");
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -277,6 +448,28 @@ public class AlertsController {
         public String getType() { return type; }
         public String getMessage() { return message; }
         public String getStatus() { return status; }
+    }
+
+    private void showAccessDeniedAndGoDashboard() {
+        javafx.scene.control.Alert alert = new javafx.scene.control.Alert(javafx.scene.control.Alert.AlertType.INFORMATION);
+        alert.setTitle("Access Denied");
+        alert.setHeaderText("Insufficient permissions");
+        alert.setContentText("You do not have access to Alerts.");
+        alert.showAndWait();
+        navigateToDashboard(null);
+    }
+
+    private void navigateToLoginInternal() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/javafx/demo/login-view.fxml"));
+            Scene scene = new Scene(loader.load(), 960, 640);
+            scene.getStylesheets().add(getClass().getResource("/com/javafx/demo/styles.css").toExternalForm());
+            Stage stage = (Stage) userLabel.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("Factory Inventory Login");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
 

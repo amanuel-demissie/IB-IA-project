@@ -22,6 +22,7 @@
           <children>
             <Label fx:id="userLabel" />
             <Button text="Check for Overdue Items" onAction="#onCheckOverdueClick" />
+            <Button text="Logout" onAction="#onLogoutClick" />
           </children>
         </HBox>
       </right>
@@ -35,6 +36,7 @@
         <Button fx:id="dashboardButton" text="Dashboard" maxWidth="Infinity" styleClass="nav-item" onAction="#onDashboardClick" />
         <Button fx:id="productLogButton" text="Product Log" maxWidth="Infinity" styleClass="nav-item" onAction="#onProductLogClick" />
         <Button fx:id="alertsButton" text="Alerts" maxWidth="Infinity" styleClass="nav-item selected" onAction="#onAlertsClick" />
+        <Button fx:id="productsButton" text="Products" maxWidth="Infinity" styleClass="nav-item" onAction="#onProductsClick" />
         <Button fx:id="userManagementButton" text="User Management" maxWidth="Infinity" styleClass="nav-item" onAction="#onUserManagementClick" />
       </children>
     </VBox>
@@ -49,7 +51,9 @@
       <children>
         <!-- Filter Tabs -->
         <HBox spacing="12">
-          <ToggleGroup fx:id="filterGroup" />
+          <fx:define>
+            <ToggleGroup fx:id="filterGroup" />
+          </fx:define>
           <RadioButton text="Unresolved" toggleGroup="$filterGroup" selected="true" fx:id="unresolvedRadio" onAction="#onFilterChange" />
           <RadioButton text="All Alerts" toggleGroup="$filterGroup" fx:id="allAlertsRadio" onAction="#onFilterChange" />
         </HBox>
@@ -57,6 +61,34 @@
         <!-- Alerts Table -->
         <VBox spacing="12" prefWidth="1000">
           <children>
+            <!-- Filters -->
+            <HBox spacing="12" alignment="CENTER_LEFT">
+              <children>
+                <VBox spacing="6">
+                  <children>
+                    <Label text="Product Filter:" />
+                    <ComboBox fx:id="filterProductCombo" promptText="All products" prefWidth="220" />
+                  </children>
+                </VBox>
+                <VBox spacing="6">
+                  <children>
+                    <Label text="From:" />
+                    <DatePicker fx:id="filterFromDate" />
+                  </children>
+                </VBox>
+                <VBox spacing="6">
+                  <children>
+                    <Label text="To:" />
+                    <DatePicker fx:id="filterToDate" />
+                  </children>
+                </VBox>
+                <VBox alignment="BOTTOM_LEFT">
+                  <children>
+                    <Button text="Apply" onAction="#onApplyFilters" />
+                  </children>
+                </VBox>
+              </children>
+            </HBox>
             <Label fx:id="alertsCountLabel" text="0 Unresolved Alerts" styleClass="section-title" />
             <TableView fx:id="alertsTable" prefHeight="500">
               <columns>
@@ -67,6 +99,7 @@
                 <TableColumn fx:id="statusColumn" text="Status" prefWidth="120" />
               </columns>
             </TableView>
+            <Pagination fx:id="pagination" maxPageIndicatorCount="10" />
             <HBox spacing="12">
               <Button text="Resolve Selected" styleClass="primary-button" onAction="#onResolveClick" />
               <Label fx:id="messageLabel" textFill="#dc2626" />

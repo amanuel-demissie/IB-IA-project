@@ -10,10 +10,10 @@ import java.util.Optional;
 
 public class ProductDao {
 
-    public Product create(String name, String description, int quantity, String location) {
+    public Product create(String name, String description, int quantity, String location, String unit) {
         String sql = """
-            INSERT INTO products (name, description, quantity, location)
-            VALUES (?, ?, ?, ?)
+            INSERT INTO products (name, description, quantity, location, unit)
+            VALUES (?, ?, ?, ?, ?)
             """;
         try (Connection c = Database.getConnection();
              PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -21,6 +21,7 @@ public class ProductDao {
             ps.setString(2, description);
             ps.setInt(3, quantity);
             ps.setString(4, location);
+            ps.setString(5, unit);
             ps.executeUpdate();
             
             try (ResultSet rs = ps.getGeneratedKeys()) {
@@ -37,7 +38,7 @@ public class ProductDao {
 
     public Optional<Product> findById(int id) {
         String sql = """
-            SELECT id, name, description, quantity, location, created_at, updated_at
+            SELECT id, name, description, quantity, location, unit, created_at, updated_at
             FROM products
             WHERE id = ?
             """;
@@ -57,7 +58,7 @@ public class ProductDao {
 
     public List<Product> findAll() {
         String sql = """
-            SELECT id, name, description, quantity, location, created_at, updated_at
+            SELECT id, name, description, quantity, location, unit, created_at, updated_at
             FROM products
             ORDER BY name
             """;
@@ -77,7 +78,7 @@ public class ProductDao {
     public void update(Product product) {
         String sql = """
             UPDATE products
-            SET name = ?, description = ?, quantity = ?, location = ?
+            SET name = ?, description = ?, quantity = ?, location = ?, unit = ?
             WHERE id = ?
             """;
         try (Connection c = Database.getConnection();
@@ -86,7 +87,8 @@ public class ProductDao {
             ps.setString(2, product.description());
             ps.setInt(3, product.quantity());
             ps.setString(4, product.location());
-            ps.setInt(5, product.id());
+            ps.setString(5, product.unit());
+            ps.setInt(6, product.id());
             ps.executeUpdate();
         } catch (SQLException e) {
             throw new RuntimeException("update product failed", e);
@@ -125,6 +127,7 @@ public class ProductDao {
             rs.getString("description"),
             rs.getInt("quantity"),
             rs.getString("location"),
+            rs.getString("unit"),
             createdAt != null ? createdAt.toLocalDateTime() : null,
             updatedAt != null ? updatedAt.toLocalDateTime() : null
         );

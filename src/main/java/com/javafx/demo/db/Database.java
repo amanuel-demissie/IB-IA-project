@@ -39,7 +39,19 @@ public final class Database {
             try (Connection c = getConnection(); Statement st = c.createStatement()) {
                 for (String stmt : sql.split(";")) {
                     String s = stmt.trim();
-                    if (!s.isEmpty()) st.execute(s);
+                    if (!s.isEmpty()) {
+                        try {
+                            st.execute(s);
+                        } catch (SQLException e) {
+                            String msg = e.getMessage() != null ? e.getMessage() : "";
+                            String upper = s.toUpperCase();
+                            if (upper.contains("ALTER TABLE PRODUCTS") && upper.contains("ADD COLUMN") && msg.contains("Duplicate column")) {
+                                // ignore duplicate column errors to allow idempotent upgrades
+                            } else {
+                                throw e;
+                            }
+                        }
+                    }
                 }
             }
         } catch (Exception e) {

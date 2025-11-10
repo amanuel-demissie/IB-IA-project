@@ -88,6 +88,17 @@ public class AlertService {
         return alertDao.findAll();
     }
 
+    public java.util.List<Alert> getAlertsFiltered(Integer productId, String status,
+                                                   java.time.LocalDate fromDate, java.time.LocalDate toDate,
+                                                   int limit, int offset) {
+        return alertDao.findFiltered(productId, status, fromDate, toDate, limit, offset);
+    }
+
+    public int countAlertsFiltered(Integer productId, String status,
+                                   java.time.LocalDate fromDate, java.time.LocalDate toDate) {
+        return alertDao.countFiltered(productId, status, fromDate, toDate);
+    }
+
     /**
      * Mark an alert as resolved
      * @param alertId The alert ID
@@ -121,6 +132,13 @@ public class AlertService {
      */
     public int getUnresolvedAlertCount() {
         return alertDao.findUnresolved().size();
+    }
+
+    /**
+     * Convenience to return a fixed set of roles for UI combo boxes.
+     */
+    public static java.util.List<String> getSupportedRoles() {
+        return java.util.List.of("ADMIN", "SECURITY", "STAFF");
     }
 }
 

@@ -34,7 +34,7 @@
             <Label fx:id="errorLabel" textFill="red" />
           </children>
         </VBox>
-        <Hyperlink text="Forgot password?" focusTraversable="false" />
+        <Hyperlink text="Forgot password?" focusTraversable="false" onAction="#onForgotPassword" />
       </children>
     </VBox>
   </center>

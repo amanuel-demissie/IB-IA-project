@@ -23,6 +23,7 @@
         <HBox spacing="12" alignment="CENTER_RIGHT">
           <children>
             <Label fx:id="userLabel" />
+            <Button text="Logout" onAction="#onLogoutClick" />
             <StackPane prefWidth="36" prefHeight="36" style="-fx-background-color:#e5e7eb; -fx-background-radius:18;" />
           </children>
         </HBox>
@@ -37,6 +38,7 @@
         <Button fx:id="dashboardButton" text="Dashboard" maxWidth="Infinity" styleClass="nav-item selected" onAction="#onDashboardClick" />
         <Button fx:id="productLogButton" text="Product Log" maxWidth="Infinity" styleClass="nav-item" onAction="#onProductLogClick" />
         <Button fx:id="alertsButton" text="Alerts" maxWidth="Infinity" styleClass="nav-item" onAction="#onAlertsClick" />
+        <Button fx:id="productsButton" text="Products" maxWidth="Infinity" styleClass="nav-item" onAction="#onProductsClick" />
         <Button fx:id="userManagementButton" text="User Management" maxWidth="Infinity" styleClass="nav-item" onAction="#onUserManagementClick" />
       </children>
     </VBox>
@@ -90,6 +92,14 @@
             </VBox>
           </children>
         </GridPane>
+
+        <!-- Admin actions -->
+        <HBox spacing="12">
+          <children>
+            <Button fx:id="generateReportButton" text="Generate Today's Report" onAction="#onGenerateReportClick" />
+            <Button fx:id="printReportButton" text="Print Today's Report" onAction="#onPrintReportClick" />
+          </children>
+        </HBox>
 
         <!-- Recent Logs Table -->
         <VBox spacing="12">

@@ -8,6 +8,7 @@ public record Product(
     String description,
     int quantity,
     String location,
+    String unit,
     LocalDateTime createdAt,
     LocalDateTime updatedAt
 ) {
@@ -17,6 +18,9 @@ public record Product(
         }
         if (quantity < 0) {
             throw new IllegalArgumentException("Quantity cannot be negative");
+        }
+        if (unit == null || unit.isBlank()) {
+            throw new IllegalArgumentException("Unit cannot be null or blank");
         }
     }
 }

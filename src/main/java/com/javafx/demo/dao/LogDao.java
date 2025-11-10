@@ -37,6 +37,98 @@ public class LogDao {
         }
     }
 
+    public List<ProductLog> findFiltered(Integer productId, Integer userId, String actionType,
+                                         java.time.LocalDate fromDate, java.time.LocalDate toDate,
+                                         int limit, int offset) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("""
+            SELECT id, product_id, user_id, action_type, quantity, timestamp, notes
+            FROM logs
+            WHERE 1=1
+            """);
+        java.util.List<Object> params = new java.util.ArrayList<>();
+        if (productId != null) {
+            sb.append(" AND product_id = ?");
+            params.add(productId);
+        }
+        if (userId != null) {
+            sb.append(" AND user_id = ?");
+            params.add(userId);
+        }
+        if (actionType != null && !actionType.isBlank() && !"ALL".equalsIgnoreCase(actionType)) {
+            sb.append(" AND action_type = ?");
+            params.add(actionType);
+        }
+        if (fromDate != null) {
+            sb.append(" AND DATE(timestamp) >= ?");
+            params.add(java.sql.Date.valueOf(fromDate));
+        }
+        if (toDate != null) {
+            sb.append(" AND DATE(timestamp) <= ?");
+            params.add(java.sql.Date.valueOf(toDate));
+        }
+        sb.append(" ORDER BY timestamp DESC LIMIT ? OFFSET ?");
+        params.add(limit);
+        params.add(offset);
+
+        List<ProductLog> logs = new ArrayList<>();
+        try (Connection c = Database.getConnection();
+             PreparedStatement ps = c.prepareStatement(sb.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    logs.add(mapRow(rs));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("findFiltered failed", e);
+        }
+        return logs;
+    }
+
+    public int countFiltered(Integer productId, Integer userId, String actionType,
+                             java.time.LocalDate fromDate, java.time.LocalDate toDate) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT COUNT(*) AS cnt FROM logs WHERE 1=1");
+        java.util.List<Object> params = new java.util.ArrayList<>();
+        if (productId != null) {
+            sb.append(" AND product_id = ?");
+            params.add(productId);
+        }
+        if (userId != null) {
+            sb.append(" AND user_id = ?");
+            params.add(userId);
+        }
+        if (actionType != null && !actionType.isBlank() && !"ALL".equalsIgnoreCase(actionType)) {
+            sb.append(" AND action_type = ?");
+            params.add(actionType);
+        }
+        if (fromDate != null) {
+            sb.append(" AND DATE(timestamp) >= ?");
+            params.add(java.sql.Date.valueOf(fromDate));
+        }
+        if (toDate != null) {
+            sb.append(" AND DATE(timestamp) <= ?");
+            params.add(java.sql.Date.valueOf(toDate));
+        }
+        try (Connection c = Database.getConnection();
+             PreparedStatement ps = c.prepareStatement(sb.toString())) {
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("cnt");
+                }
+                return 0;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("countFiltered failed", e);
+        }
+    }
+
     public List<ProductLog> findRecent(int limit) {
         String sql = """
             SELECT id, product_id, user_id, action_type, quantity, timestamp, notes

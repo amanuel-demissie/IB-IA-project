@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.javafx.demo.UserManagementController"
+            prefWidth="1200" prefHeight="800">
+  <!-- Header -->
+  <top>
+    <BorderPane BorderPane.alignment="CENTER">
+      <padding>
+        <Insets top="24" right="24" bottom="24" left="24" />
+      </padding>
+      <center>
+        <Label text="User Management" styleClass="app-title" />
+      </center>
+      <right>
+        <HBox spacing="12" alignment="CENTER_RIGHT">
+          <children>
+            <Label fx:id="userLabel" />
+            <Button text="Logout" onAction="#onLogoutClick" />
+          </children>
+        </HBox>
+      </right>
+    </BorderPane>
+  </top>
+
+  <!-- Sidebar -->
+  <left>
+    <VBox spacing="8" prefWidth="200" styleClass="sidebar">
+      <children>
+        <Button fx:id="dashboardButton" text="Dashboard" maxWidth="Infinity" styleClass="nav-item" onAction="#onDashboardClick" />
+        <Button fx:id="productLogButton" text="Product Log" maxWidth="Infinity" styleClass="nav-item" onAction="#onProductLogClick" />
+        <Button fx:id="alertsButton" text="Alerts" maxWidth="Infinity" styleClass="nav-item" onAction="#onAlertsClick" />
+        <Button fx:id="productsButton" text="Products" maxWidth="Infinity" styleClass="nav-item" onAction="#onProductsClick" />
+        <Button fx:id="userManagementButton" text="User Management" maxWidth="Infinity" styleClass="nav-item selected" onAction="#onUserManagementClick" />
+      </children>
+    </VBox>
+  </left>
+
+  <!-- Main content -->
+  <center>
+    <VBox spacing="24" alignment="TOP_CENTER">
+      <padding>
+        <Insets top="24" right="24" bottom="24" left="24" />
+      </padding>
+      <children>
+        <HBox spacing="24">
+          <!-- Users table -->
+          <VBox spacing="12" prefWidth="700">
+            <children>
+              <Label text="Users" styleClass="section-title" />
+              <TableView fx:id="usersTable" prefHeight="520">
+                <columns>
+                  <TableColumn fx:id="idColumn" text="ID" prefWidth="60" />
+                  <TableColumn fx:id="usernameColumn" text="Username" prefWidth="260" />
+                  <TableColumn fx:id="roleColumn" text="Role" prefWidth="160" />
+                </columns>
+              </TableView>
+              <HBox spacing="8">
+                <ComboBox fx:id="editRoleCombo" promptText="Change role to..." onAction="#onChangeRole" />
+                <Button text="Reset Password" onAction="#onResetPassword" />
+                <Button text="Delete User" onAction="#onDeleteUser" />
+              </HBox>
+            </children>
+          </VBox>
+
+          <!-- Create user form -->
+          <VBox spacing="12" styleClass="card" prefWidth="380">
+            <padding>
+              <Insets top="24" right="24" bottom="24" left="24" />
+            </padding>
+            <children>
+              <Label text="Create New User" styleClass="section-title" />
+              <VBox spacing="8">
+                <Label text="Username:" />
+                <TextField fx:id="newUsernameField" promptText="Enter username" />
+              </VBox>
+              <VBox spacing="8">
+                <Label text="Password:" />
+                <PasswordField fx:id="newPasswordField" promptText="Enter password" />
+              </VBox>
+              <VBox spacing="8">
+                <Label text="Role:" />
+                <ComboBox fx:id="newRoleCombo" promptText="Select role" />
+              </VBox>
+              <Button text="Create User" styleClass="primary-button" onAction="#onCreateUser" />
+              <Label fx:id="messageLabel" textFill="#dc2626" />
+            </children>
+          </VBox>
+        </HBox>
+
+        <!-- Settings (Admin) -->
+        <VBox spacing="12" styleClass="card" prefWidth="1100">
+          <padding>
+            <Insets top="24" right="24" bottom="24" left="24" />
+          </padding>
+          <children>
+            <Label text="Settings" styleClass="section-title" />
+            <HBox spacing="16">
+              <children>
+                <VBox spacing="8" prefWidth="240">
+                  <children>
+                    <Label text="Overdue Hours:" />
+                    <TextField fx:id="overdueHoursField" promptText="e.g. 2" />
+                  </children>
+                </VBox>
+                <VBox spacing="8" prefWidth="280">
+                  <children>
+                    <Label text="Scheduler Interval (minutes):" />
+                    <TextField fx:id="schedulerIntervalField" promptText="e.g. 1" />
+                  </children>
+                </VBox>
+                <VBox spacing="8" prefWidth="240">
+                  <children>
+                    <Label text="Report Time (HH:mm):" />
+                    <TextField fx:id="reportTimeField" promptText="e.g. 23:55" />
+                  </children>
+                </VBox>
+                <VBox spacing="8" prefWidth="280">
+                  <children>
+                    <Label text="Dashboard Refresh (seconds, 0=off):" />
+                    <TextField fx:id="dashboardRefreshSecondsField" promptText="e.g. 15" />
+                  </children>
+                </VBox>
+                <VBox alignment="BOTTOM_LEFT">
+                  <children>
+                    <Button text="Save Settings" styleClass="primary-button" onAction="#onSaveSettings" />
+                  </children>
+                </VBox>
+              </children>
+            </HBox>
+            <Label fx:id="settingsMessageLabel" textFill="#4b5563" />
+          </children>
+        </VBox>
+      </children>
+    </VBox>
+  </center>
+</BorderPane>
+
+
