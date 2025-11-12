@@ -267,10 +267,9 @@ public class UserManagementController {
     private void navigateTo(String fxml, ActionEvent event, String title) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxml));
-            Scene scene = new Scene(loader.load(), 1200, 800);
-            scene.getStylesheets().add(getClass().getResource("/com/javafx/demo/styles.css").toExternalForm());
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(scene);
+            Scene scene = stage.getScene();
+            scene.setRoot(loader.load());
             stage.setTitle(title);
         } catch (Exception e) {
             e.printStackTrace();
@@ -280,10 +279,9 @@ public class UserManagementController {
     private void navigateToDashboardInternal() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/javafx/demo/dashboard-view.fxml"));
-            Scene scene = new Scene(loader.load(), 1200, 800);
-            scene.getStylesheets().add(getClass().getResource("/com/javafx/demo/styles.css").toExternalForm());
             Stage stage = (Stage) userLabel.getScene().getWindow();
-            stage.setScene(scene);
+            Scene scene = stage.getScene();
+            scene.setRoot(loader.load());
             stage.setTitle("Factory Dashboard");
         } catch (Exception e) {
             e.printStackTrace();

@@ -108,28 +108,14 @@ public class ProductManagementController {
 
     private void loadProducts() {
         ObservableList<ProductRow> rows = FXCollections.observableArrayList();
-        for (Product p : productService.getAllProducts()) {
-            // Build per-location summary for display, so it reflects transfers
-            String locSummary;
-            var perLoc = productStockDao.findByProduct(p.id());
-            if (perLoc.isEmpty()) {
-                locSummary = p.location() == null ? "" : p.location();
-            } else {
-                StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < perLoc.size(); i++) {
-                    var ls = perLoc.get(i);
-                    if (i > 0) sb.append(", ");
-                    sb.append(ls.locationName()).append(": ").append(ls.quantity());
-                }
-                locSummary = sb.toString();
-            }
+        for (var row : productStockDao.findAllPerLocation()) {
             rows.add(new ProductRow(
-                p.id(),
-                p.name(),
-                p.description(),
-                p.quantity(),
-                locSummary,
-                p.unit()
+                row.productId(),
+                row.name(),
+                row.description(),
+                row.quantity(),           // Quantity at this location
+                row.locationName(),       // One location per row
+                row.unit()
             ));
         }
         productsTable.setItems(rows);
@@ -276,10 +262,9 @@ public class ProductManagementController {
     private void navigateTo(String fxml, ActionEvent event, String title) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource(fxml));
-            Scene scene = new Scene(loader.load(), 1200, 800);
-            scene.getStylesheets().add(getClass().getResource("/com/javafx/demo/styles.css").toExternalForm());
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(scene);
+            Scene scene = stage.getScene();
+            scene.setRoot(loader.load());
             stage.setTitle(title);
         } catch (Exception e) {
             e.printStackTrace();

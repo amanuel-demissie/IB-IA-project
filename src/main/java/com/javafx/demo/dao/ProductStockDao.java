@@ -11,6 +11,8 @@ public class ProductStockDao {
 
     public record ProductWithQty(int productId, String name, String unit, int quantity) {}
 
+    public record ProductAtLocation(int productId, String name, String description, String unit, String locationName, int quantity) {}
+
     public int getQuantity(int productId, int locationId) {
         String sql = "SELECT quantity FROM product_stock WHERE product_id = ? AND location_id = ?";
         try (Connection c = Database.getConnection();
@@ -120,6 +122,35 @@ public class ProductStockDao {
         try (PreparedStatement ps = c.prepareStatement("DELETE FROM product_stock WHERE quantity <= 0")) {
             ps.executeUpdate();
         }
+    }
+
+    public List<ProductAtLocation> findAllPerLocation() {
+        String sql = """
+            SELECT p.id, p.name, p.description, p.unit, l.name AS loc_name, ps.quantity
+            FROM product_stock ps
+            JOIN products p ON p.id = ps.product_id
+            JOIN locations l ON l.id = ps.location_id
+            WHERE ps.quantity > 0
+            ORDER BY p.name, l.name
+            """;
+        List<ProductAtLocation> out = new ArrayList<>();
+        try (Connection c = Database.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+            while (rs.next()) {
+                out.add(new ProductAtLocation(
+                    rs.getInt("id"),
+                    rs.getString("name"),
+                    rs.getString("description"),
+                    rs.getString("unit"),
+                    rs.getString("loc_name"),
+                    rs.getInt("quantity")
+                ));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("findAllPerLocation failed", e);
+        }
+        return out;
     }
 
     public void backfillFromProductsIfEmpty() {

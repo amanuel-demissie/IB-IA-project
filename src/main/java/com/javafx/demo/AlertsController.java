@@ -282,12 +282,9 @@ public class AlertsController {
     private void onProductsClick(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/javafx/demo/product-management-view.fxml"));
-            Scene scene = new Scene(loader.load(), 1200, 800);
-            scene.getStylesheets().add(
-                getClass().getResource("/com/javafx/demo/styles.css").toExternalForm()
-            );
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(scene);
+            Scene scene = stage.getScene();
+            scene.setRoot(loader.load());
             stage.setTitle("Products");
         } catch (Exception e) {
             e.printStackTrace();
@@ -297,12 +294,9 @@ public class AlertsController {
     private void navigateToDashboard(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/javafx/demo/dashboard-view.fxml"));
-            Scene scene = new Scene(loader.load(), 1200, 800);
-            scene.getStylesheets().add(
-                getClass().getResource("/com/javafx/demo/styles.css").toExternalForm()
-            );
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(scene);
+            Scene scene = stage.getScene();
+            scene.setRoot(loader.load());
             stage.setTitle("Factory Dashboard");
         } catch (Exception e) {
             e.printStackTrace();
@@ -312,12 +306,9 @@ public class AlertsController {
     private void navigateToProductLog(ActionEvent event) {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/com/javafx/demo/product-log-view.fxml"));
-            Scene scene = new Scene(loader.load(), 1200, 800);
-            scene.getStylesheets().add(
-                getClass().getResource("/com/javafx/demo/styles.css").toExternalForm()
-            );
             Stage stage = (Stage) ((Node) event.getSource()).getScene().getWindow();
-            stage.setScene(scene);
+            Scene scene = stage.getScene();
+            scene.setRoot(loader.load());
             stage.setTitle("Product Log");
         } catch (Exception e) {
             e.printStackTrace();
