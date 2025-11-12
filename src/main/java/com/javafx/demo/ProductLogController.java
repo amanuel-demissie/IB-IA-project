@@ -5,6 +5,9 @@ import com.javafx.demo.model.Product;
 import com.javafx.demo.model.ProductLog;
 import com.javafx.demo.model.User;
 import com.javafx.demo.service.ProductService;
+import com.javafx.demo.service.InventoryService;
+import com.javafx.demo.dao.LocationDao;
+import com.javafx.demo.dao.ProductStockDao;
 import com.javafx.demo.security.AuthGuard;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -36,6 +39,8 @@ public class ProductLogController {
     @FXML
     private Label messageLabel;
     @FXML
+    private ComboBox<LocationDao.Location> locationComboBox;
+    @FXML
     private TableView<LogTableRow> logsTable;
     @FXML
     private TableColumn<LogTableRow, String> dateColumn;
@@ -49,6 +54,13 @@ public class ProductLogController {
     private TableColumn<LogTableRow, String> userColumn;
     @FXML
     private TableColumn<LogTableRow, String> notesColumn;
+    // Per-location stock table
+    @FXML
+    private TableView<PerLocRow> perLocationTable;
+    @FXML
+    private TableColumn<PerLocRow, String> locNameColumn;
+    @FXML
+    private TableColumn<PerLocRow, Integer> locQtyColumn;
     @FXML
     private Button dashboardButton;
     @FXML
@@ -72,6 +84,9 @@ public class ProductLogController {
     private javafx.scene.control.Pagination pagination;
 
     private final ProductService productService = new ProductService();
+    private final InventoryService inventoryService = new InventoryService();
+    private final LocationDao locationDao = new LocationDao();
+    private final ProductStockDao productStockDao = new ProductStockDao();
     // Avoid explicit DateTimeFormatter to prevent runtime resolution issues
     private static final int PAGE_SIZE = 20;
 
@@ -113,7 +128,7 @@ public class ProductLogController {
         // Load products into filter combo
         loadFilterProducts();
         // Setup action filter
-        filterActionCombo.setItems(FXCollections.observableArrayList("ALL", "CHECK_IN", "CHECK_OUT"));
+        filterActionCombo.setItems(FXCollections.observableArrayList("ALL", "CHECK_IN", "CHECK_OUT", "TRANSFER"));
         filterActionCombo.getSelectionModel().select("ALL");
 
         // Setup table columns
@@ -124,6 +139,14 @@ public class ProductLogController {
         userColumn.setCellValueFactory(new PropertyValueFactory<>("user"));
         notesColumn.setCellValueFactory(new PropertyValueFactory<>("notes"));
 
+        // Per-location columns
+        if (locNameColumn != null) {
+            locNameColumn.setCellValueFactory(new PropertyValueFactory<>("locationName"));
+        }
+        if (locQtyColumn != null) {
+            locQtyColumn.setCellValueFactory(new PropertyValueFactory<>("quantity"));
+        }
+
         // Load logs (first page)
         setupPagination();
 
@@ -132,6 +155,35 @@ public class ProductLogController {
 
         // Disable future dates in filters
         setupDatePickers();
+
+        // Load locations for check-in/out
+        if (locationComboBox != null) {
+            var locs = FXCollections.observableArrayList(locationDao.findAll());
+            locationComboBox.setItems(locs);
+            if (!locs.isEmpty()) {
+                locationComboBox.getSelectionModel().select(0);
+            }
+            // show only location name in dropdown/button
+            locationComboBox.setCellFactory(list -> new ListCell<>() {
+                @Override protected void updateItem(LocationDao.Location loc, boolean empty) {
+                    super.updateItem(loc, empty);
+                    setText(empty || loc == null ? null : loc.name());
+                }
+            });
+            locationComboBox.setButtonCell(new ListCell<>() {
+                @Override protected void updateItem(LocationDao.Location loc, boolean empty) {
+                    super.updateItem(loc, empty);
+                    setText(empty || loc == null ? "Select location" : loc.name());
+                }
+            });
+        }
+
+        // Update per-location table when product changes
+        if (productComboBox != null) {
+            productComboBox.getSelectionModel().selectedItemProperty().addListener((obs, o, n) -> {
+                if (n != null) loadPerLocationStock(n.id());
+            });
+        }
     }
 
     private void loadProducts() {
@@ -306,6 +358,11 @@ public class ProductLogController {
                 messageLabel.setText("Please select a product");
                 return;
             }
+            LocationDao.Location selectedLocation = locationComboBox != null ? locationComboBox.getSelectionModel().getSelectedItem() : null;
+            if (selectedLocation == null) {
+                messageLabel.setText("Please select a location");
+                return;
+            }
 
             String quantityText = quantityField.getText().trim();
             if (quantityText.isEmpty()) {
@@ -336,11 +393,11 @@ public class ProductLogController {
 
             // Perform check-in or check-out
             if ("CHECK_OUT".equals(actionType)) {
-                productService.checkOut(selectedProduct.id(), currentUser.id(), quantity, notes);
+                inventoryService.checkOut(selectedProduct.id(), selectedLocation.id(), currentUser.id(), quantity, notes);
                 messageLabel.setTextFill(javafx.scene.paint.Color.GREEN);
                 messageLabel.setText("Successfully checked out " + quantity + " " + selectedProduct.name());
             } else {
-                productService.checkIn(selectedProduct.id(), currentUser.id(), quantity, notes);
+                inventoryService.checkIn(selectedProduct.id(), selectedLocation.id(), currentUser.id(), quantity, notes);
                 messageLabel.setTextFill(javafx.scene.paint.Color.GREEN);
                 messageLabel.setText("Successfully checked in " + quantity + " " + selectedProduct.name());
             }
@@ -351,6 +408,7 @@ public class ProductLogController {
             // Reload products and logs
             loadProducts();
             onApplyFilters(null);
+            loadPerLocationStock(selectedProduct.id());
 
         } catch (IllegalArgumentException e) {
             messageLabel.setTextFill(javafx.scene.paint.Color.RED);
@@ -510,6 +568,28 @@ public class ProductLogController {
         public Integer getQuantity() { return quantity; }
         public String getUser() { return user; }
         public String getNotes() { return notes; }
+    }
+
+    public static class PerLocRow {
+        private final String locationName;
+        private final Integer quantity;
+        public PerLocRow(String locationName, Integer quantity) {
+            this.locationName = locationName;
+            this.quantity = quantity;
+        }
+        public String getLocationName() { return locationName; }
+        public Integer getQuantity() { return quantity; }
+    }
+
+    private void loadPerLocationStock(int productId) {
+        if (perLocationTable == null) return;
+        var rows = FXCollections.<PerLocRow>observableArrayList();
+        for (var ls : productStockDao.findByProduct(productId)) {
+            rows.add(new PerLocRow(ls.locationName(), ls.quantity()));
+        }
+        perLocationTable.getSelectionModel().clearSelection();
+        perLocationTable.setItems(rows);
+        // rows already exclude zero-qty via DAO filter
     }
 }
 

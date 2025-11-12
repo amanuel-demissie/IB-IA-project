@@ -107,6 +107,17 @@ public class ProductDao {
         }
     }
 
+    public void updateQuantity(int productId, int newQuantity, Connection c) {
+        String sql = "UPDATE products SET quantity = ? WHERE id = ?";
+        try (PreparedStatement ps = c.prepareStatement(sql)) {
+            ps.setInt(1, newQuantity);
+            ps.setInt(2, productId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException("updateQuantity failed", e);
+        }
+    }
+
     public void delete(int id) {
         String sql = "DELETE FROM products WHERE id = ?";
         try (Connection c = Database.getConnection();

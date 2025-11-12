@@ -6,6 +6,8 @@ import com.javafx.demo.service.ProductService;
 import com.javafx.demo.service.AlertService;
 import com.javafx.demo.service.ReportService;
 import com.javafx.demo.dao.SettingsDao;
+import com.javafx.demo.dao.LocationDao;
+import com.javafx.demo.dao.ProductStockDao;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -32,6 +34,20 @@ public class HelloJavaFX extends Application {
         Database.migrateIfNeeded();
         new AuthService().seedAdminIfMissing();
         new ProductService().seedSampleProductsIfEmpty();
+        // Ensure locations and initial stock
+        new LocationDao().ensureDefaults();
+        boolean backfillEnabled = !"0".equals(settingsDao.get("stock_backfill_enabled"));
+        if (backfillEnabled) {
+            new ProductStockDao().backfillFromProductsIfEmpty();
+        }
+        // One-time repair: reset and backfill from products.location if requested (default: once)
+        String force = settingsDao.get("stock_backfill_force");
+        if (force == null || "1".equals(force)) {
+            new ProductStockDao().resetAndBackfillFromProducts();
+            settingsDao.set("stock_backfill_force", "0");
+        }
+        // Repair: ensure any newly created products without stock rows are populated once per start
+        new ProductStockDao().ensureMissingFromProducts();
 
         // Read settings
         schedulerIntervalMinutes = settingsDao.getInt("scheduler_interval_minutes", 1);

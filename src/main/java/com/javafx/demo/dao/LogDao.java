@@ -37,12 +37,39 @@ public class LogDao {
         }
     }
 
+    public ProductLog createTransfer(int productId, int userId, int quantity, String notes,
+                                     Integer fromLocationId, Integer toLocationId) {
+        String sql = """
+            INSERT INTO logs (product_id, user_id, action_type, quantity, notes, from_location_id, to_location_id)
+            VALUES (?, ?, 'TRANSFER', ?, ?, ?, ?)
+            """;
+        try (Connection c = Database.getConnection();
+             PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+            ps.setInt(1, productId);
+            ps.setInt(2, userId);
+            ps.setInt(3, quantity);
+            ps.setString(4, notes);
+            if (fromLocationId != null) ps.setInt(5, fromLocationId); else ps.setNull(5, java.sql.Types.INTEGER);
+            if (toLocationId != null) ps.setInt(6, toLocationId); else ps.setNull(6, java.sql.Types.INTEGER);
+            ps.executeUpdate();
+            try (ResultSet rs = ps.getGeneratedKeys()) {
+                if (rs.next()) {
+                    int id = rs.getInt(1);
+                    return findById(id).orElseThrow();
+                }
+            }
+            throw new RuntimeException("Failed to retrieve created transfer log");
+        } catch (SQLException e) {
+            throw new RuntimeException("create transfer log failed", e);
+        }
+    }
+
     public List<ProductLog> findFiltered(Integer productId, Integer userId, String actionType,
                                          java.time.LocalDate fromDate, java.time.LocalDate toDate,
                                          int limit, int offset) {
         StringBuilder sb = new StringBuilder();
         sb.append("""
-            SELECT id, product_id, user_id, action_type, quantity, timestamp, notes
+            SELECT id, product_id, user_id, action_type, quantity, timestamp, notes, from_location_id, to_location_id
             FROM logs
             WHERE 1=1
             """);
@@ -131,7 +158,7 @@ public class LogDao {
 
     public List<ProductLog> findRecent(int limit) {
         String sql = """
-            SELECT id, product_id, user_id, action_type, quantity, timestamp, notes
+            SELECT id, product_id, user_id, action_type, quantity, timestamp, notes, from_location_id, to_location_id
             FROM logs
             ORDER BY timestamp DESC
             LIMIT ?
@@ -153,7 +180,7 @@ public class LogDao {
 
     public List<ProductLog> findByProductId(int productId) {
         String sql = """
-            SELECT id, product_id, user_id, action_type, quantity, timestamp, notes
+            SELECT id, product_id, user_id, action_type, quantity, timestamp, notes, from_location_id, to_location_id
             FROM logs
             WHERE product_id = ?
             ORDER BY timestamp DESC
@@ -175,7 +202,7 @@ public class LogDao {
 
     public List<ProductLog> findByUserId(int userId) {
         String sql = """
-            SELECT id, product_id, user_id, action_type, quantity, timestamp, notes
+            SELECT id, product_id, user_id, action_type, quantity, timestamp, notes, from_location_id, to_location_id
             FROM logs
             WHERE user_id = ?
             ORDER BY timestamp DESC
@@ -197,7 +224,7 @@ public class LogDao {
 
     public List<ProductLog> findCheckOutsOlderThan(int hours) {
         String sql = """
-            SELECT id, product_id, user_id, action_type, quantity, timestamp, notes
+            SELECT id, product_id, user_id, action_type, quantity, timestamp, notes, from_location_id, to_location_id
             FROM logs
             WHERE action_type = 'CHECK_OUT'
             AND timestamp < DATE_SUB(NOW(), INTERVAL ? HOUR)
@@ -226,7 +253,7 @@ public class LogDao {
 
     public java.util.Optional<ProductLog> findById(int id) {
         String sql = """
-            SELECT id, product_id, user_id, action_type, quantity, timestamp, notes
+            SELECT id, product_id, user_id, action_type, quantity, timestamp, notes, from_location_id, to_location_id
             FROM logs
             WHERE id = ?
             """;
@@ -284,6 +311,8 @@ public class LogDao {
 
     private ProductLog mapRow(ResultSet rs) throws SQLException {
         Timestamp timestamp = rs.getTimestamp("timestamp");
+        Integer fromLoc = (Integer) rs.getObject("from_location_id");
+        Integer toLoc = (Integer) rs.getObject("to_location_id");
         return new ProductLog(
             rs.getInt("id"),
             rs.getInt("product_id"),
@@ -291,7 +320,9 @@ public class LogDao {
             rs.getString("action_type"),
             rs.getInt("quantity"),
             timestamp != null ? timestamp.toLocalDateTime() : LocalDateTime.now(),
-            rs.getString("notes")
+            rs.getString("notes"),
+            fromLoc,
+            toLoc
         );
     }
 }

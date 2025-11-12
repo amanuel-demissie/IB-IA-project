@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="com.javafx.demo.TransfersController">
+  <top>
+    <HBox spacing="12" alignment="CENTER_LEFT">
+      <padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
+      <children>
+        <Label text="Transfers" styleClass="section-title"/>
+        <Pane HBox.hgrow="ALWAYS"/>
+        <Button text="Quick Transfer" onAction="#onQuickTransfer"/>
+      </children>
+    </HBox>
+  </top>
+  <left>
+    <VBox spacing="8" prefWidth="480">
+      <padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
+      <children>
+        <Label text="From Location"/>
+        <ComboBox fx:id="fromLocationCombo" prefWidth="420"/>
+        <TextField fx:id="fromSearchField" promptText="Search products"/>
+        <TableView fx:id="fromTable" prefHeight="420" tableMenuButtonVisible="false" editable="false">
+          <columns>
+            <TableColumn fx:id="fromProductColumn" text="Product" prefWidth="300"/>
+            <TableColumn fx:id="fromQtyColumn" text="Qty" prefWidth="80"/>
+          </columns>
+        </TableView>
+        <Label fx:id="messageLabel" textFill="#dc2626"/>
+      </children>
+    </VBox>
+  </left>
+  <center>
+    <VBox alignment="CENTER" spacing="12">
+      <children>
+        <Button text="Transfer →" onAction="#onTransferClick"/>
+      </children>
+    </VBox>
+  </center>
+  <right>
+    <VBox spacing="8" prefWidth="480">
+      <padding><Insets top="8" right="8" bottom="8" left="8"/></padding>
+      <children>
+        <Label text="To Location"/>
+        <ComboBox fx:id="toLocationCombo" prefWidth="420"/>
+        <TableView fx:id="toTable" prefHeight="460" tableMenuButtonVisible="false" editable="false">
+          <columns>
+            <TableColumn fx:id="toProductColumn" text="Product" prefWidth="300"/>
+            <TableColumn fx:id="toQtyColumn" text="Qty" prefWidth="80"/>
+          </columns>
+        </TableView>
+      </children>
+    </VBox>
+  </right>
+</BorderPane>
+
+

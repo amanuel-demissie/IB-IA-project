@@ -2,6 +2,7 @@ package com.javafx.demo;
 
 import com.javafx.demo.app.Session;
 import com.javafx.demo.dao.ProductDao;
+import com.javafx.demo.dao.ProductStockDao;
 import com.javafx.demo.model.Product;
 import com.javafx.demo.model.User;
 import com.javafx.demo.service.ProductService;
@@ -59,6 +60,7 @@ public class ProductManagementController {
 
     private final ProductService productService = new ProductService();
     private final ProductDao productDao = new ProductDao();
+    private final ProductStockDao productStockDao = new ProductStockDao();
 
     @FXML
     private void initialize() {
@@ -107,12 +109,26 @@ public class ProductManagementController {
     private void loadProducts() {
         ObservableList<ProductRow> rows = FXCollections.observableArrayList();
         for (Product p : productService.getAllProducts()) {
+            // Build per-location summary for display, so it reflects transfers
+            String locSummary;
+            var perLoc = productStockDao.findByProduct(p.id());
+            if (perLoc.isEmpty()) {
+                locSummary = p.location() == null ? "" : p.location();
+            } else {
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < perLoc.size(); i++) {
+                    var ls = perLoc.get(i);
+                    if (i > 0) sb.append(", ");
+                    sb.append(ls.locationName()).append(": ").append(ls.quantity());
+                }
+                locSummary = sb.toString();
+            }
             rows.add(new ProductRow(
                 p.id(),
                 p.name(),
                 p.description(),
                 p.quantity(),
-                p.location(),
+                locSummary,
                 p.unit()
             ));
         }

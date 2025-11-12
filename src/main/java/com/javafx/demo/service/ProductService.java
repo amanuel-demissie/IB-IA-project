@@ -90,7 +90,27 @@ public class ProductService {
      * Create a new product
      */
     public Product createProduct(String name, String description, int quantity, String location, String unit) {
-        return productDao.create(name, description, quantity, location, unit);
+        Product p = productDao.create(name, description, quantity, location, unit);
+        // Ensure product_stock has an initial row matching product's location and quantity
+        try {
+            com.javafx.demo.dao.LocationDao locationDao = new com.javafx.demo.dao.LocationDao();
+            var loc = locationDao.findOrCreateByName(location);
+            try (java.sql.Connection c = com.javafx.demo.db.Database.getConnection()) {
+                c.setAutoCommit(false);
+                // insert only if missing
+                try (java.sql.PreparedStatement ps = c.prepareStatement(
+                        "INSERT IGNORE INTO product_stock(product_id, location_id, quantity) VALUES(?,?,?)")) {
+                    ps.setInt(1, p.id());
+                    ps.setInt(2, loc.id());
+                    ps.setInt(3, quantity);
+                    ps.executeUpdate();
+                }
+                c.commit();
+            }
+        } catch (Exception ignored) {
+            // best-effort; user can always adjust via transfers
+        }
+        return p;
     }
 
     /**
